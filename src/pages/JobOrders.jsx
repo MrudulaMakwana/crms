@@ -10,12 +10,17 @@ import {
   MoreVertical,
   Activity,
   HardDrive,
-  Calendar
+  Calendar,
+  Play,
+  PackageSearch,
+  ShoppingCart,
+  FastForward
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import Button from '../components/Button';
 import AddJobOrderModal from '../components/AddJobOrderModal';
+import AddRequisitionModal from '../components/AddRequisitionModal';
 
 const mockJobOrders = [
   {
@@ -48,6 +53,7 @@ const mockJobOrders = [
 
 const JobOrders = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isRequisitionModalOpen, setIsRequisitionModalOpen] = useState(false);
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-7xl mx-auto pb-10">
@@ -225,12 +231,43 @@ const JobOrders = () => {
                     {job.targetDate}
                   </td>
                   <td className="p-4 text-center align-middle">
-                    <div className="flex items-center justify-center gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                      <button className="p-2 text-cyan-600 bg-cyan-50 hover:bg-cyan-100 dark:text-cyan-400 dark:bg-cyan-500/10 dark:hover:bg-cyan-500/20 rounded-lg transition-colors border border-cyan-100 dark:border-cyan-500/20 shadow-sm" title="Manage Stage">
-                        <Settings size={16} />
+                    <div className="flex items-center justify-end gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                      <button className="relative group/btn p-1.5 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 dark:text-emerald-400 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 rounded-lg transition-colors border border-emerald-100 dark:border-emerald-500/20 shadow-sm">
+                        <Play size={16} />
+                        <span className="absolute bottom-full mb-2 right-1/2 translate-x-1/2 px-2 py-1 bg-slate-800 dark:bg-white text-white dark:text-slate-900 text-[11px] font-bold rounded-lg opacity-0 group-hover/btn:opacity-100 transition-all scale-95 group-hover/btn:scale-100 whitespace-nowrap pointer-events-none z-10 shadow-xl shadow-slate-900/20 border border-slate-700/50 dark:border-slate-200/50">
+                          Start Process
+                        </span>
                       </button>
-                      <button className="p-2 text-slate-400 hover:text-slate-600 bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg transition-colors border border-slate-200 dark:border-slate-700 shadow-sm" title="More Options">
+                      
+                      <button className="relative group/btn p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 dark:text-blue-400 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 rounded-lg transition-colors border border-blue-100 dark:border-blue-500/20 shadow-sm">
+                        <PackageSearch size={16} />
+                        <span className="absolute bottom-full mb-2 right-1/2 translate-x-1/2 px-2 py-1 bg-slate-800 dark:bg-white text-white dark:text-slate-900 text-[11px] font-bold rounded-lg opacity-0 group-hover/btn:opacity-100 transition-all scale-95 group-hover/btn:scale-100 whitespace-nowrap pointer-events-none z-10 shadow-xl shadow-slate-900/20 border border-slate-700/50 dark:border-slate-200/50">
+                          Check Stock
+                        </span>
+                      </button>
+                      
+                      <button 
+                        onClick={() => setIsRequisitionModalOpen(true)}
+                        className="relative group/btn p-1.5 text-amber-600 bg-amber-50 hover:bg-amber-100 dark:text-amber-400 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 rounded-lg transition-colors border border-amber-100 dark:border-amber-500/20 shadow-sm"
+                      >
+                        <ShoppingCart size={16} />
+                        <span className="absolute bottom-full mb-2 right-1/2 translate-x-1/2 px-2 py-1 bg-slate-800 dark:bg-white text-white dark:text-slate-900 text-[11px] font-bold rounded-lg opacity-0 group-hover/btn:opacity-100 transition-all scale-95 group-hover/btn:scale-100 whitespace-nowrap pointer-events-none z-10 shadow-xl shadow-slate-900/20 border border-slate-700/50 dark:border-slate-200/50">
+                          Create Purchase Requisition
+                        </span>
+                      </button>
+                      
+                      <button className="relative group/btn p-1.5 text-purple-600 bg-purple-50 hover:bg-purple-100 dark:text-purple-400 dark:bg-purple-500/10 dark:hover:bg-purple-500/20 rounded-lg transition-colors border border-purple-100 dark:border-purple-500/20 shadow-sm">
+                        <FastForward size={16} />
+                        <span className="absolute bottom-full mb-2 right-1/2 translate-x-1/2 px-2 py-1 bg-slate-800 dark:bg-white text-white dark:text-slate-900 text-[11px] font-bold rounded-lg opacity-0 group-hover/btn:opacity-100 transition-all scale-95 group-hover/btn:scale-100 whitespace-nowrap pointer-events-none z-10 shadow-xl shadow-slate-900/20 border border-slate-700/50 dark:border-slate-200/50">
+                          Advance Process
+                        </span>
+                      </button>
+                      
+                      <button className="relative group/btn p-1.5 ml-1 text-slate-400 hover:text-slate-600 bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg transition-colors border border-slate-200 dark:border-slate-700 shadow-sm">
                         <MoreVertical size={16} />
+                        <span className="absolute bottom-full mb-2 right-1/2 translate-x-1/2 px-2 py-1 bg-slate-800 dark:bg-white text-white dark:text-slate-900 text-[11px] font-bold rounded-lg opacity-0 group-hover/btn:opacity-100 transition-all scale-95 group-hover/btn:scale-100 whitespace-nowrap pointer-events-none z-10 shadow-xl shadow-slate-900/20 border border-slate-700/50 dark:border-slate-200/50">
+                          More Options
+                        </span>
                       </button>
                     </div>
                   </td>
@@ -242,6 +279,7 @@ const JobOrders = () => {
       </div>
 
       <AddJobOrderModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
+      <AddRequisitionModal isOpen={isRequisitionModalOpen} onClose={() => setIsRequisitionModalOpen(false)} />
     </div>
   );
 };

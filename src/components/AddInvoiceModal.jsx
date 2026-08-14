@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
-import { X, FileText, User, Building, Calendar, DollarSign, Percent, Box, AlignLeft, ShieldCheck, FileDigit } from 'lucide-react';
-import api from '../services/api';
+import React, { useState, useEffect } from 'react';
+import { X, FileText, User, Building, Calendar, DollarSign, Percent, Box, AlignLeft, ShieldCheck, FileDigit, CheckCircle2, AlertCircle } from 'lucide-react';
 
-const AddInvoiceModal = ({ isOpen, onClose }) => {
+const AddInvoiceModal = ({ isOpen, onClose, onInvoiceAdded, invoiceData }) => {
   const [formData, setFormData] = useState({
     invoice_number: '',
     customer_name: '',
@@ -33,6 +32,57 @@ const AddInvoiceModal = ({ isOpen, onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Clear success and error states, and pre-fill form if editing
+  useEffect(() => {
+    if (isOpen) {
+      setSuccess('');
+      setError('');
+      if (invoiceData) {
+        setFormData({
+          invoice_number: invoiceData.invoice_number || '',
+          customer_name: invoiceData.customer_name || '',
+          customer_email: invoiceData.customer_email || '',
+          customer_address: invoiceData.customer_address || '',
+          billing_address: invoiceData.billing_address || '',
+          invoice_date: invoiceData.invoice_date || '',
+          due_date: invoiceData.due_date || '',
+          payment_method: invoiceData.payment_method || 'bank_transfer',
+          subtotal: invoiceData.subtotal || '',
+          tax_percentage: invoiceData.tax_percentage || '',
+          discount_percentage: invoiceData.discount_percentage || '',
+          notes: invoiceData.notes || '',
+          status: invoiceData.status || 'draft',
+          transaction_id: invoiceData.transaction_id || '',
+          terms_conditions: invoiceData.terms_conditions || '',
+          item_description: invoiceData.items && invoiceData.items[0] ? invoiceData.items[0].description : '',
+          item_quantity: invoiceData.items && invoiceData.items[0] ? invoiceData.items[0].quantity : '',
+          item_unit_price: invoiceData.items && invoiceData.items[0] ? invoiceData.items[0].unit_price : ''
+        });
+      } else {
+        setFormData({
+          invoice_number: '',
+          customer_name: '',
+          customer_email: '',
+          customer_address: '',
+          billing_address: '',
+          invoice_date: '',
+          due_date: '',
+          payment_method: 'bank_transfer',
+          subtotal: '',
+          tax_percentage: '',
+          discount_percentage: '',
+          notes: '',
+          status: 'draft',
+          transaction_id: '',
+          terms_conditions: '',
+          item_description: '',
+          item_quantity: '',
+          item_unit_price: ''
+        });
+      }
+    }
+  }, [isOpen, invoiceData]);
 
   if (!isOpen) return null;
 
@@ -94,19 +144,71 @@ const AddInvoiceModal = ({ isOpen, onClose }) => {
         ]
       };
 
-      await api.post('/invoices/invoices/', payload);
-      
-      setSuccess('Invoice created successfully!');
-      setTimeout(() => {
-        onClose();
-      }, 1500);
-    } catch (err) {
-      console.error(err);
-      setError(err.response?.data?.detail || err.response?.data?.error || err.message || 'Failed to create invoice');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        // localStorage integration
+        const existingInvoicesStr = localStorage.getItem('crms_invoices');
+        let existingInvoices = [];
+        if (existingInvoicesStr) {
+          try {
+            existingInvoices = JSON.parse(existingInvoicesStr);
+          } catch (e) {
+            existingInvoices = [];
+          }
+        }
+        
+        const isEditing = !!invoiceData;
+        let newInvoice = {
+          ...payload,
+          id: isEditing ? invoiceData.id : Date.now(),
+          created_at: isEditing ? invoiceData.created_at : new Date().toISOString()
+        };
+        
+        let updatedInvoices = [];
+        if (isEditing) {
+          updatedInvoices = existingInvoices.map(inv => inv.id === invoiceData.id ? newInvoice : inv);
+        } else {
+          updatedInvoices = [newInvoice, ...existingInvoices];
+        }
+        
+        localStorage.setItem('crms_invoices', JSON.stringify(updatedInvoices));
+        
+        if (onInvoiceAdded) {
+          onInvoiceAdded();
+        }
+        
+        setSuccess(isEditing ? 'Invoice updated successfully!' : 'Invoice created successfully!');
+        setTimeout(() => {
+          onClose();
+          // Reset form and states on success
+          setSuccess('');
+          setError('');
+          setFormData({
+            invoice_number: '',
+            customer_name: '',
+            customer_email: '',
+            customer_address: '',
+            billing_address: '',
+            invoice_date: '',
+            due_date: '',
+            payment_method: 'bank_transfer',
+            subtotal: '',
+            tax_percentage: '',
+            discount_percentage: '',
+            notes: '',
+            status: 'draft',
+            transaction_id: '',
+            terms_conditions: '',
+            item_description: '',
+            item_quantity: '',
+            item_unit_price: ''
+          });
+        }, 1500);
+      } catch (err) {
+        console.error(err);
+        setError('Failed to create invoice');
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -115,6 +217,30 @@ const AddInvoiceModal = ({ isOpen, onClose }) => {
         className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
+      
+      {/* Success Toast */}
+      {success && (
+        <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[200] animate-in slide-in-from-top-10 fade-in duration-300 zoom-in-95">
+          <div className="flex items-center gap-3 px-5 py-3.5 bg-white dark:bg-[#111624] border border-emerald-200 dark:border-emerald-500/30 shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)] rounded-2xl">
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+              <CheckCircle2 size={18} />
+            </div>
+            <span className="font-bold text-sm text-slate-900 dark:text-white">{success}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Error Toast */}
+      {error && (
+        <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[200] animate-in slide-in-from-top-10 fade-in duration-300 zoom-in-95">
+          <div className="flex items-center gap-3 px-5 py-3.5 bg-white dark:bg-[#111624] border border-red-200 dark:border-red-500/30 shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)] rounded-2xl">
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400">
+              <AlertCircle size={18} />
+            </div>
+            <span className="font-bold text-sm text-slate-900 dark:text-white">{error}</span>
+          </div>
+        </div>
+      )}
       
       {/* Modal */}
       <div className="relative bg-white dark:bg-[#111624] w-full max-w-3xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
@@ -126,8 +252,8 @@ const AddInvoiceModal = ({ isOpen, onClose }) => {
               <FileText size={20} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Create New Invoice</h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Generate an invoice for your customers</p>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">{invoiceData ? 'Edit Invoice' : 'Create New Invoice'}</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400">{invoiceData ? 'Update details for this invoice' : 'Generate an invoice for your customers'}</p>
             </div>
           </div>
           <button 
@@ -140,18 +266,6 @@ const AddInvoiceModal = ({ isOpen, onClose }) => {
 
         {/* Form Body - Scrollable */}
         <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
-          
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 rounded-xl text-sm font-medium">
-              {error}
-            </div>
-          )}
-          {success && (
-            <div className="mb-6 p-4 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-xl text-sm font-medium">
-              {success}
-            </div>
-          )}
-
           <form id="add-invoice-form" onSubmit={handleSubmit} className="space-y-8">
             
             {/* General Info */}
@@ -477,10 +591,10 @@ const AddInvoiceModal = ({ isOpen, onClose }) => {
             {isLoading ? (
               <>
                 <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                Generating...
+                {invoiceData ? 'Updating...' : 'Generating...'}
               </>
             ) : (
-              'Create Invoice'
+              invoiceData ? 'Update Invoice' : 'Create Invoice'
             )}
           </button>
         </div>

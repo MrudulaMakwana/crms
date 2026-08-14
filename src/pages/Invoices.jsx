@@ -15,36 +15,92 @@ import {
   Star,
   Square,
   Box,
-  Layout
+  Layout,
+  Settings2,
+  Edit,
+  Trash2,
+  CheckCircle2,
+  Clock,
+  Printer,
+  FileSearch
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import AddInvoiceModal from '../components/AddInvoiceModal';
+import InvoiceDetailModal from '../components/InvoiceDetailModal';
 
-const mockInvoices = [
-  { id: '#1465781', company: 'Truelysell', cIcon: CircleDot, cColor: 'text-indigo-500', status: 'Partially Paid', total: '$2,15,000', due: '22 Jun 2025', paid: '$2,15,000', balance: '$0', sentTo: 'BlueSky Industries', sIcon: Hexagon, sColor: 'text-blue-600' },
-  { id: '#1465782', company: 'Dreamschat', cIcon: Layout, cColor: 'text-orange-500', status: 'Paid', total: '$1,45,000', due: '20 May 2025', paid: '$1,45,000', balance: '$0', sentTo: 'NovaWave LLC', sIcon: CircleDot, sColor: 'text-red-500' },
-  { id: '#1465783', company: 'DreamGigs', cIcon: Box, cColor: 'text-slate-800 dark:text-white', status: 'Partially Paid', total: '$2,15,000', due: '30 Apr 2025', paid: '$1,00,000', balance: '$1,15,000', sentTo: 'Silver Hawk', sIcon: Square, sColor: 'text-emerald-500' },
-  { id: '#1465784', company: 'Servbook', cIcon: Hexagon, cColor: 'text-pink-500', status: 'Paid', total: '$4,80,380', due: '21 Apr 2025', paid: '$4,80,380', balance: '$0', sentTo: 'Summit Peak', sIcon: Star, sColor: 'text-blue-500' },
-  { id: '#1465785', company: 'DreamPOS', cIcon: Triangle, cColor: 'text-emerald-500', status: 'Unpaid', total: '$2,12,000', due: '19 Mar 2025', paid: '$0', balance: '$2,12,000', sentTo: 'RiverStone Ltd', sIcon: CircleDot, sColor: 'text-slate-800 dark:text-slate-200' },
-  { id: '#1465786', company: 'Kofejob', cIcon: Hexagon, cColor: 'text-cyan-500', status: 'Partially Paid', total: '$3,50,000', due: '11 Mar 2025', paid: '$1,50,000', balance: '$2,00,000', sentTo: 'Bright Bridge Grp', sIcon: CircleDot, sColor: 'text-blue-400' },
-  { id: '#1465787', company: 'SmartHR', cIcon: Triangle, cColor: 'text-yellow-500', status: 'Overdue', total: '$2,46,000', due: '17 Feb 2025', paid: '$1,23,000', balance: '$1,23,000', sentTo: 'CoastalStar Co.', sIcon: Layout, cColor2: 'text-blue-600', sColor: 'text-blue-600' },
-  { id: '#1465788', company: 'Doccure', cIcon: Box, cColor: 'text-blue-500', status: 'Paid', total: '$3,12,500', due: '07 Feb 2025', paid: '$3,12,500', balance: '$0', sentTo: 'HarborView', sIcon: CircleDot, sColor: 'text-orange-500' },
-  { id: '#1465789', company: 'Best@laundry', cIcon: CircleDot, cColor: 'text-indigo-600', status: 'Unpaid', total: '$4,18,000', due: '20 Jan 2025', paid: '$0', balance: '$4,18,000', sentTo: 'Golden Gate Ltd', sIcon: Square, sColor: 'text-purple-500' },
-];
+// Use standard icons for dynamic invoices
+const getCompanyIcon = (name) => {
+  if (!name) return CircleDot;
+  const firstChar = name.charAt(0).toLowerCase();
+  if (['a','e','i','o','u'].includes(firstChar)) return Hexagon;
+  if (['b','c','d','f','g'].includes(firstChar)) return Box;
+  if (['h','j','k','l','m'].includes(firstChar)) return Layout;
+  return Triangle;
+};
+
+const getCompanyColor = (name) => {
+  if (!name) return 'text-slate-500';
+  const charCode = name.charCodeAt(0) % 5;
+  const colors = ['text-blue-500', 'text-indigo-500', 'text-emerald-500', 'text-pink-500', 'text-orange-500'];
+  return colors[charCode];
+};
 
 const getStatusBadge = (status) => {
   switch (status) {
-    case 'Paid': return 'bg-emerald-500 text-white shadow-sm';
-    case 'Partially Paid': return 'bg-amber-500 text-white shadow-sm';
-    case 'Unpaid': return 'bg-red-500 text-white shadow-sm';
-    case 'Overdue': return 'bg-blue-500 text-white shadow-sm';
+    case 'paid': return 'bg-emerald-500 text-white shadow-sm';
+    case 'partially paid': return 'bg-amber-500 text-white shadow-sm';
+    case 'unpaid': 
+    case 'draft': return 'bg-slate-500 text-white shadow-sm';
+    case 'overdue': return 'bg-red-500 text-white shadow-sm';
+    case 'sent': return 'bg-blue-500 text-white shadow-sm';
     default: return 'bg-slate-500 text-white shadow-sm';
   }
 };
 
 const Invoices = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editInvoiceData, setEditInvoiceData] = useState(null);
+  const [selectedInvoices, setSelectedInvoices] = useState([]);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [invoices, setInvoices] = useState([]);
+  const [activeDropdown, setActiveDropdown] = useState(null);
+  const dropdownRef = useRef(null);
+  const navigate = useNavigate();
+
+  const fetchInvoices = () => {
+    const stored = localStorage.getItem('crms_invoices');
+    if (stored) {
+      try {
+        setInvoices(JSON.parse(stored));
+      } catch (e) {
+        setInvoices([]);
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchInvoices();
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setActiveDropdown(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownRef]);
+
+  const toggleDropdown = (id, e) => {
+    e.stopPropagation();
+    setActiveDropdown(activeDropdown === id ? null : id);
+  };
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-7xl mx-auto pb-10">
@@ -54,7 +110,7 @@ const Invoices = () => {
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Invoices</h1>
-            <span className="px-2 py-0.5 bg-red-50 text-red-500 dark:bg-red-500/10 dark:text-red-400 text-xs font-bold rounded">125</span>
+            <span className="px-2 py-0.5 bg-red-50 text-red-500 dark:bg-red-500/10 dark:text-red-400 text-xs font-bold rounded">{invoices.length}</span>
           </div>
           <div className="flex items-center gap-2 mt-1 text-sm text-slate-500 dark:text-slate-400">
             <span>Home</span>
@@ -94,7 +150,7 @@ const Invoices = () => {
             </button>
           </div>
           <button 
-              onClick={() => setIsAddModalOpen(true)}
+              onClick={() => { setEditInvoiceData(null); setIsAddModalOpen(true); }}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold transition-colors shadow-md"
             >
               <Plus size={16} /> Add New Invoice
@@ -104,33 +160,95 @@ const Invoices = () => {
 
       {/* Grid Layout for Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {mockInvoices.map((inv, idx) => {
-          const CIcon = inv.cIcon;
-          const SIcon = inv.sIcon;
-          
-          return (
-            <div key={idx} className="bg-white dark:bg-[#111624] rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow flex flex-col p-5">
+        {invoices.length === 0 ? (
+          <div className="col-span-full py-20 text-center flex flex-col items-center justify-center bg-white dark:bg-[#111624] border border-slate-200/70 dark:border-slate-800 rounded-xl shadow-[0_4px_20px_rgb(0,0,0,0.03)]">
+             <FileText size={48} className="text-slate-300 dark:text-slate-700 mb-4" />
+             <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">No Invoices Found</h3>
+             <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-sm">You haven't created any invoices yet. Create your first invoice to get started.</p>
+             <button 
+                onClick={() => { setEditInvoiceData(null); setIsAddModalOpen(true); }}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold transition-colors shadow-md"
+              >
+                <Plus size={16} /> Add New Invoice
+              </button>
+          </div>
+        ) : (
+          invoices.map((inv, idx) => {
+            const CIcon = getCompanyIcon(inv.customer_name);
+            const SIcon = getCompanyIcon(inv.customer_name); // fallback sentTo icon
+            const totalAmount = `$${parseFloat(inv.total || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            const isPaid = inv.status === 'paid';
+            const paidAmount = isPaid ? totalAmount : '$0.00';
+            const balanceAmount = isPaid ? '$0.00' : totalAmount;
+            
+            return (
+              <div key={inv.id || idx} className="bg-white dark:bg-[#111624] rounded-xl border border-slate-200/70 dark:border-slate-800 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-shadow flex flex-col p-5">
               
               {/* Card Header (ID & More) */}
-              <div className="flex items-center justify-between mb-4">
-                <span className="inline-flex px-2 py-1 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-bold rounded-md">
-                  {inv.id}
+              <div className="flex items-center justify-between mb-4 relative" ref={activeDropdown === inv.id ? dropdownRef : null}>
+                <span className="inline-flex px-3 py-1 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-bold rounded-lg border border-blue-200 dark:border-blue-500/20">
+                  {inv.invoice_number || `#${inv.id}`}
                 </span>
-                <button className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded border border-slate-200 dark:border-slate-700 transition-colors">
-                  <MoreVertical size={14} />
+                
+                <button 
+                  onClick={(e) => toggleDropdown(inv.id, e)}
+                  className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded border border-slate-200 dark:border-slate-700 transition-colors bg-white dark:bg-[#111624] shadow-sm"
+                >
+                  <MoreVertical size={16} />
                 </button>
+                
+                {/* Custom Dropdown Menu */}
+                {activeDropdown === inv.id && (
+                  <div className="absolute right-0 top-10 mt-1 w-56 bg-white dark:bg-[#111624] rounded-xl shadow-xl shadow-slate-900/10 dark:shadow-black/40 border border-slate-200 dark:border-slate-700 py-2 z-20 animate-in fade-in slide-in-from-top-2 duration-150">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setEditInvoiceData(inv); setIsAddModalOpen(true); setActiveDropdown(null); }}
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    >
+                      <Edit size={16} className="text-slate-400" /> Edit
+                    </button>
+                    <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-red-600 dark:hover:text-red-400 transition-colors">
+                      <Trash2 size={16} className="text-slate-400" /> Delete
+                    </button>
+                    <div className="h-px bg-slate-100 dark:bg-slate-800 my-1"></div>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); navigate(`/erp/invoices/${inv.id}`); setActiveDropdown(null); }}
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                    >
+                      <FileSearch size={16} className="text-slate-400" /> View Invoice
+                    </button>
+                    <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                      <CheckCircle2 size={16} className="text-slate-400" /> Mark as Paid
+                    </button>
+                    <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                      <FileText size={16} className="text-slate-400" /> Mark as Partially Paid
+                    </button>
+                    <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                      <Clock size={16} className="text-slate-400" /> Mark as Unpaid
+                    </button>
+                    <div className="h-px bg-slate-100 dark:bg-slate-800 my-1"></div>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); navigate('/erp/invoices/template'); setActiveDropdown(null); }}
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                    >
+                      <Settings2 size={16} className="text-slate-400" /> Format Template
+                    </button>
+                    <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                      <Printer size={16} className="text-slate-400" /> Print
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Company & Status */}
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <div className={`p-1.5 rounded-lg bg-slate-50 dark:bg-[#0b0f19] border border-slate-100 dark:border-slate-800 ${inv.cColor}`}>
+                  <div className={`p-1.5 rounded-lg bg-slate-50 dark:bg-[#0b0f19] border border-slate-100 dark:border-slate-800 ${getCompanyColor(inv.customer_name)}`}>
                     <CIcon size={20} />
                   </div>
-                  <h3 className="font-bold text-slate-900 dark:text-white text-[15px]">{inv.company}</h3>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-[15px] truncate max-w-[120px]">{inv.customer_name || 'Unknown'}</h3>
                 </div>
-                <span className={`inline-flex px-2 py-0.5 rounded text-[11px] font-bold ${getStatusBadge(inv.status)}`}>
-                  {inv.status}
+                <span className={`inline-flex px-2 py-0.5 rounded text-[11px] font-bold capitalize ${getStatusBadge(inv.status)}`}>
+                  {inv.status || 'Draft'}
                 </span>
               </div>
 
@@ -139,49 +257,47 @@ const Invoices = () => {
                 <div className="flex items-center gap-2 text-sm">
                   <FileText size={14} className="text-slate-400" />
                   <span className="text-slate-500 dark:text-slate-400 w-32">Total Value :</span>
-                  <span className="font-medium text-slate-900 dark:text-white">{inv.total}</span>
+                  <span className="font-medium text-slate-900 dark:text-white">{totalAmount}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <FileText size={14} className="text-slate-400" />
                   <span className="text-slate-500 dark:text-slate-400 w-32">Due Date :</span>
-                  <span className="font-medium text-slate-900 dark:text-white">{inv.due}</span>
+                  <span className="font-medium text-slate-900 dark:text-white">{inv.due_date || 'N/A'}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <FileText size={14} className="text-slate-400" />
                   <span className="text-slate-500 dark:text-slate-400 w-32">Paid Amount :</span>
-                  <span className="font-medium text-slate-900 dark:text-white">{inv.paid}</span>
+                  <span className="font-medium text-slate-900 dark:text-white">{paidAmount}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <FileText size={14} className="text-slate-400" />
                   <span className="text-slate-500 dark:text-slate-400 w-32">Balance Amount :</span>
-                  <span className="font-medium text-slate-900 dark:text-white">{inv.balance}</span>
+                  <span className="font-medium text-slate-900 dark:text-white">{balanceAmount}</span>
                 </div>
               </div>
 
               {/* Footer: Sent to */}
               <div className="mt-auto pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center gap-3">
-                <div className={`p-1.5 rounded-full bg-slate-50 dark:bg-[#0b0f19] border border-slate-100 dark:border-slate-800 ${inv.sColor}`}>
+                <div className={`p-1.5 rounded-full bg-slate-50 dark:bg-[#0b0f19] border border-slate-100 dark:border-slate-800 ${getCompanyColor(inv.customer_name)}`}>
                   <SIcon size={16} />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-sm font-bold text-slate-900 dark:text-white leading-tight">{inv.sentTo}</span>
+                  <span className="text-sm font-bold text-slate-900 dark:text-white leading-tight truncate max-w-[150px]">{inv.customer_name || 'Client'}</span>
                   <span className="text-xs text-slate-400 leading-tight">Sent to</span>
                 </div>
               </div>
 
             </div>
           );
-        })}
+        })
+        )}
       </div>
 
-      {/* Load More Button */}
-      <div className="flex justify-center mt-8">
-        <button className="flex items-center gap-2 px-5 py-2.5 bg-[#f03b25] hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white rounded-lg text-sm font-bold transition-colors shadow-md">
-          <RefreshCw size={16} /> Load More
-        </button>
-      </div>
+     
 
-      <AddInvoiceModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
+      <AddInvoiceModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onInvoiceAdded={fetchInvoices} invoiceData={editInvoiceData} />
+
+      <InvoiceDetailModal isOpen={isDetailModalOpen} onClose={() => setIsDetailModalOpen(false)} />
     </div>
   );
 };

@@ -298,7 +298,8 @@ const Sidebar = () => {
                         { label: 'Employee Dashboard', to: '/employee-dashboard' },
                         { label: 'Executive Dashboard', to: '/executive-dashboard' },
                         { label: 'Finance Dashboard', to: '/finance-dashboard' },
-                        { label: 'Sales Dashboard', to: '/sales-dashboard' }
+                        { label: 'Sales Dashboard', to: '/sales-dashboard' },
+                        { label: 'Production Dashboard', to: '/production-dashboard' }
                     ],
                 },
 
@@ -329,11 +330,23 @@ const Sidebar = () => {
                     subItems: [
                         { label: "Quotations", to: "/erp/quotations", icon: FileText },
                         { label: "Sales Orders", to: "/erp/sales-orders", icon: ShoppingCart },
-                        { label: "Job Orders", to: "/erp/job-orders", icon: Settings },
-                        { label: "Purchase Requisitions", to: "/erp/purchase-requisitions", icon: ShoppingBag },
-                        { label: "Bill of Materials (BOM)", to: "/erp/boms", icon: FileText },
                         { label: "Delivery Notes", to: "/crm/delivery-notes", icon: Truck },
                         { label: "Invoices & Billing", to: "/erp/invoices", icon: Receipt },
+                    ]
+                },
+                {
+                    label: "Production",
+                    icon: Factory,
+                    subItems: [
+                        { label: "Production Stage", to: "/production/stages", icon: Layers },
+                        { label: "Job Orders", to: "/erp/job-orders", icon: Settings },
+                        { label: "Bill of Materials (BOM)", to: "/erp/boms", icon: FileText },
+                        { label: "Machines", to: "/production/machines", icon: Package },
+                        { label: "GRN", to: "/production/grn", icon: FileCheck },
+                        { label: "Requisitions (Approve/Disapprove)", to: "/production/requisitions", icon: FileCheck },
+                        { label: "Quality Inspections", to: "/production/quality-inspections", icon: ShieldCheck },
+                        { label: "Dispatch Job", to: "/production/dispatch-job", icon: Truck },
+                        { label: "Material Issues", to: "/production/material-issues", icon: Activity },
                     ]
                 },
                 {
@@ -341,6 +354,7 @@ const Sidebar = () => {
                     icon: ShoppingBag,
                     subItems: [
                         { label: "Vendors", to: "/purchase/vendors", icon: Users2 },
+                        { label: "Purchase Requisitions", to: "/erp/purchase-requisitions", icon: ShoppingBag },
                         { label: "Purchases", to: "/purchase/purchases", icon: ShoppingBag },
                         {
                             label: "Purchase Orders",
@@ -479,7 +493,7 @@ const Sidebar = () => {
 
     return (
         <aside
-            className={`bg-white dark:bg-[#111624] flex flex-col h-full border-r border-slate-200 dark:border-slate-800 transition-all duration-300 ease-in-out fixed inset-y-0 left-0 z-[60] md:relative md:translate-x-0 ${
+            className={`bg-white dark:bg-[#0b0f19] flex flex-col h-full border-r border-slate-200/60 dark:border-slate-800/50 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out fixed inset-y-0 left-0 z-[60] md:relative md:translate-x-0 ${
                 isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
             } ${isCollapsed ? "w-[72px]" : "w-[260px]"}`}
         >
@@ -559,14 +573,14 @@ const Sidebar = () => {
 
             {/* Logout Footer */}
             <div
-                className={`p-4 border-t border-slate-100 dark:border-slate-800/80 transition-all duration-300 ${isCollapsed ? "flex justify-center" : ""}`}
+                className={`p-4 mt-auto border-t border-slate-200/60 dark:border-slate-800/80 transition-all duration-300 ${isCollapsed ? "flex justify-center" : ""}`}
             >
                 <button
                     onClick={handleLogout}
-                    className={`flex items-center gap-3 ${isCollapsed ? "p-3 justify-center" : "w-full px-4 py-3"} rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors text-[13px] font-bold`}
+                    className={`group flex items-center gap-3 ${isCollapsed ? "p-3 justify-center" : "w-full px-4 py-3"} rounded-xl bg-transparent text-slate-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors text-sm font-medium`}
                     title={isCollapsed ? "Logout" : ""}
                 >
-                    <LogOut size={20} />
+                    <LogOut size={20} className="text-slate-400 group-hover:text-red-500 transition-colors" />
                     {!isCollapsed && "Logout"}
                 </button>
             </div>

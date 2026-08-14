@@ -37,6 +37,8 @@ import PurchaseOrders from './pages/PurchaseOrders';
 import Inventory from './pages/Inventory';
 import PurchaseRequisitions from './pages/PurchaseRequisitions';
 import Invoices from './pages/Invoices';
+import InvoiceDetails from './pages/InvoiceDetails';
+import InvoiceTemplateSettings from './pages/InvoiceTemplateSettings';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
@@ -47,6 +49,7 @@ import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import EmployeeDashboard from './pages/EmployeeDashboard';
 import ManagerDashboard from './pages/ManagerDashboard';
+import ProductionDashboard from './pages/ProductionDashboard';
 import Products from './pages/Products';
 import Categories from './pages/Categories';
 import InventoryManage from './pages/InventoryManage';
@@ -71,6 +74,13 @@ import BOMs from './pages/BOMs';
 import Purchases from './pages/Purchases';
 import PurchaseReturn from './pages/PurchaseReturn';
 import Vendors from './pages/Vendors';
+import ProductionStages from './pages/ProductionStages';
+import Machines from './pages/Machines';
+import GRNs from './pages/GRNs';
+import Requisitions from './pages/Requisitions';
+import QualityInspections from './pages/QualityInspections';
+import DispatchJobs from './pages/DispatchJobs';
+import MaterialIssues from './pages/MaterialIssues';
 
 import ExpenseSummary from './pages/reports/ExpenseSummary';
 import IncomeSummary from './pages/reports/IncomeSummary';
@@ -107,6 +117,7 @@ function App() {
             <Route path="sales-dashboard" element={<SalesDashboard />} />
             <Route path="executive-dashboard" element={<ExecutiveDashboard />} />
             <Route path="finance-dashboard" element={<FinanceDashboard />} />
+            <Route path="production-dashboard" element={<ProductionDashboard />} />
             
             {/* Admin Routes */}
             <Route path="admin/dashboard" element={<AdminDashboard />} />
@@ -172,6 +183,15 @@ function App() {
             <Route path="purchase/purchase-return" element={<PurchaseReturn />} />
             <Route path="purchase/vendors" element={<Vendors />} />
 
+            {/* Production Routes */}
+            <Route path="production/stages" element={<ProductionStages />} />
+            <Route path="production/machines" element={<Machines />} />
+            <Route path="production/grn" element={<GRNs />} />
+            <Route path="production/requisitions" element={<Requisitions />} />
+            <Route path="production/quality-inspections" element={<QualityInspections />} />
+            <Route path="production/dispatch-job" element={<DispatchJobs />} />
+            <Route path="production/material-issues" element={<MaterialIssues />} />
+
           {/* ERP Routes */}
             <Route path="erp/pipeline" element={<ERPPipeline />} />
             <Route path="erp/boms" element={<BOMs />} />
@@ -182,6 +202,8 @@ function App() {
             <Route path="erp/inventory" element={<Inventory />} />
             <Route path="erp/purchase-requisitions" element={<PurchaseRequisitions />} />
             <Route path="erp/invoices" element={<Invoices />} />
+            <Route path="erp/invoices/template" element={<InvoiceTemplateSettings />} />
+            <Route path="erp/invoices/:id" element={<InvoiceDetails />} />
             <Route path="crm/delivery-notes" element={<DeliveryNotes />} />
             
             {/* Inventory Routes */}
