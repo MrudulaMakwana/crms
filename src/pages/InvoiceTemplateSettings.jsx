@@ -130,10 +130,16 @@ const InvoiceTemplateSettings = () => {
                       primaryFont === 'opensans' ? 'font-sans' : '';
 
     const headerBgClass = headerBg === 'primary' 
-      ? `bg-[var(--theme-primary-light)] dark:bg-[var(--theme-primary-dark)] -mx-8 -mt-8 px-8 pt-8 sm:-mx-12 sm:-mt-12 sm:px-12 sm:pt-12 rounded-t-xl` 
+      ? `bg-[var(--theme-primary-light)] dark:bg-[var(--theme-primary-dark)] -mx-8 -mt-8 px-8 pt-8 sm:-mx-12 sm:-mt-12 sm:px-12 sm:pt-12 rounded-t-xl mb-8` 
       : headerBg === 'gray' 
-        ? 'bg-slate-50 dark:bg-slate-800/20 -mx-8 -mt-8 px-8 pt-8 sm:-mx-12 sm:-mt-12 sm:px-12 sm:pt-12 rounded-t-xl' 
-        : '';
+        ? 'bg-slate-50 dark:bg-slate-800/20 -mx-8 -mt-8 px-8 pt-8 sm:-mx-12 sm:-mt-12 sm:px-12 sm:pt-12 rounded-t-xl mb-8' 
+        : 'mb-8';
+
+    const footerBgClass = headerBg === 'primary'
+      ? `bg-[var(--theme-primary-light)] dark:bg-[var(--theme-primary-dark)] -mx-8 -mb-8 px-8 pb-8 sm:-mx-12 sm:-mb-12 sm:px-12 sm:pb-12 rounded-b-xl mt-8 pt-8`
+      : headerBg === 'gray'
+        ? 'bg-slate-50 dark:bg-slate-800/20 -mx-8 -mb-8 px-8 pb-8 sm:-mx-12 sm:-mb-12 sm:px-12 sm:pb-12 rounded-b-xl mt-8 pt-8'
+        : 'border-t border-slate-100 dark:border-slate-800/80 pt-10';
 
     const headingClass = headingSize === 'lg' ? 'text-3xl' : headingSize === 'sm' ? 'text-xl' : 'text-2xl';
 
@@ -188,7 +194,7 @@ const InvoiceTemplateSettings = () => {
         )}
 
         {/* Top Header */}
-        <div className={`relative z-10 flex justify-between items-start mb-10 pb-10 border-b border-slate-100 dark:border-slate-800 ${headerBgClass}`}>
+        <div className={`relative z-10 flex justify-between items-start pb-10 border-b border-slate-100 dark:border-slate-800 ${headerBgClass}`}>
           <div className="space-y-2">
             <div className={`flex items-center gap-2 font-black text-slate-900 dark:text-white tracking-tight mb-2 ${headingClass}`}>
               {logoPreview ? (
@@ -297,7 +303,7 @@ const InvoiceTemplateSettings = () => {
         </div>
 
         {/* Footer info */}
-        <div className="relative z-10 text-center space-y-3 pt-10 border-t border-slate-100 dark:border-slate-800/80">
+        <div className={`relative z-10 text-center space-y-3 ${footerBgClass}`}>
            <div className={`flex items-center justify-center gap-2 font-black text-slate-900 dark:text-white tracking-tight mb-4 ${headingClass}`}>
               {logoPreview ? (
                 <img src={logoPreview} alt="Logo" style={{ width: `${logoSize / 2}px` }} className="max-w-full object-contain" />

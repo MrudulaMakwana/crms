@@ -231,6 +231,18 @@ const InvoiceDetails = () => {
         let borderColorHex = formatSettings.tableBorderColor || '#e2e8f0';
         if (!borderColorHex.startsWith('#')) borderColorHex = LEGACY_COLORS[borderColorHex] || '#e2e8f0';
 
+        const headerBgClass = formatSettings.headerBg === 'primary' 
+          ? `bg-[var(--theme-primary-light)] dark:bg-[var(--theme-primary-dark)] -mx-8 -mt-8 px-8 pt-8 sm:-mx-12 sm:-mt-12 sm:px-12 sm:pt-12 rounded-t-xl mb-8` 
+          : formatSettings.headerBg === 'gray' 
+            ? 'bg-slate-50 dark:bg-slate-800/20 -mx-8 -mt-8 px-8 pt-8 sm:-mx-12 sm:-mt-12 sm:px-12 sm:pt-12 rounded-t-xl mb-8' 
+            : 'mb-8';
+
+        const footerBgClass = formatSettings.headerBg === 'primary'
+          ? `bg-[var(--theme-primary-light)] dark:bg-[var(--theme-primary-dark)] -mx-8 -mb-8 px-8 pb-8 sm:-mx-12 sm:-mb-12 sm:px-12 sm:pb-12 rounded-b-xl mt-8 pt-8`
+          : formatSettings.headerBg === 'gray'
+            ? 'bg-slate-50 dark:bg-slate-800/20 -mx-8 -mb-8 px-8 pb-8 sm:-mx-12 sm:-mb-12 sm:px-12 sm:pb-12 rounded-b-xl mt-8 pt-8'
+            : 'border-t border-slate-100 dark:border-slate-800/80 pt-10';
+
         const showAccents = formatSettings.showAccents || false;
         return (
       <div 
@@ -261,7 +273,7 @@ const InvoiceDetails = () => {
         )}
         
         {/* Top Header */}
-        <div className={`relative z-10 flex justify-between items-start mb-10 pb-10 border-b border-slate-100 dark:border-slate-800 ${formatSettings.headerBg === 'primary' ? `bg-[var(--theme-primary-light)] dark:bg-[var(--theme-primary-dark)] -mx-8 -mt-8 px-8 pt-8 sm:-mx-12 sm:-mt-12 sm:px-12 sm:pt-12 rounded-t-xl` : formatSettings.headerBg === 'gray' ? 'bg-slate-50 dark:bg-slate-800/20 -mx-8 -mt-8 px-8 pt-8 sm:-mx-12 sm:-mt-12 sm:px-12 sm:pt-12 rounded-t-xl' : ''}`}>
+        <div className={`relative z-10 flex justify-between items-start pb-10 border-b border-slate-100 dark:border-slate-800 ${headerBgClass}`}>
           <div className="space-y-2">
             <div className={`flex items-center gap-2 font-black text-slate-900 dark:text-white tracking-tight mb-2 ${formatSettings.headingSize === 'lg' ? 'text-3xl' : formatSettings.headingSize === 'sm' ? 'text-xl' : 'text-2xl'}`}>
               {formatSettings.logoPreview ? (
@@ -424,7 +436,7 @@ const InvoiceDetails = () => {
         </div>
 
         {/* Footer info */}
-        <div className="relative z-10 text-center space-y-3 pt-10 border-t border-slate-100 dark:border-slate-800/80">
+        <div className={`relative z-10 text-center space-y-3 ${footerBgClass}`}>
            <div className={`flex items-center justify-center gap-2 font-black text-slate-900 dark:text-white tracking-tight mb-4 ${formatSettings.headingSize === 'lg' ? 'text-3xl' : formatSettings.headingSize === 'sm' ? 'text-xl' : 'text-2xl'}`}>
               {formatSettings.logoPreview ? (
                 <img src={formatSettings.logoPreview} alt="Logo" style={{ width: `${(formatSettings.logoSize || 100) / 2}px` }} className="max-w-full object-contain" />
